@@ -1,0 +1,56 @@
+# C++ build files
+build/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+*.o
+*.obj
+*.a
+*.lib
+*.dll
+*.so
+*.dylib
+*.exe
+*.out
+
+# Qt specific
+*.pro.user
+*.moc
+*.qrc
+*.qmlc
+*.qrc.depends
+*.autosave
+
+# MacOS
+.DS_Store
+
+# Linux
+*.swp
+*~
+
+# Backup files
+*.bak
+*.tmp
+
+# Logs
+*.log
+
+# Compiled resources
+*.qrc
+
+# VSCode
+.vscode/
+
+# CLion / JetBrains
+.idea/
+cmake-build-*/
+
+# Generated documentation
+docs/
+html/
+latex/
+
+# Custom: Ignore editor-specific files
+*.user
+*.workspace
