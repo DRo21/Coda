@@ -1,9 +1,10 @@
 /**
  * @file EditorWidget.cpp
  * @brief Implementation of the EditorWidget class for the Coda text editor.
- *        Provides the text editing area functionality with line numbers and line highlighting.
+ *        Provides the text editing area functionality with line numbers and syntax highlighting support.
  *        Integrates a LineNumberArea widget for displaying line numbers alongside the text editor.
- * @author Dario
+ *        Supports multiple languages via the ISyntaxHighlighter interface and KSyntaxHighlightingAdapter implementation.
+ * @author Dario Romandini
  */
 
 #include "EditorWidget.h"
@@ -12,6 +13,7 @@
 
 EditorWidget::EditorWidget(QWidget *parent) : QPlainTextEdit(parent) {
     lineNumberArea = new LineNumberArea(this);
+    syntaxHighlighter = nullptr;
 
     connect(this, &QPlainTextEdit::blockCountChanged, this, &EditorWidget::updateLineNumberAreaWidth);
     connect(this, &QPlainTextEdit::updateRequest, this, &EditorWidget::updateLineNumberArea);
@@ -22,6 +24,7 @@ EditorWidget::EditorWidget(QWidget *parent) : QPlainTextEdit(parent) {
 
     setLineWrapMode(QPlainTextEdit::NoWrap);
     setFont(QFont("Courier", 12));
+    filePath = ""; // Initialize file path
 }
 
 int EditorWidget::lineNumberAreaWidth() {
@@ -97,4 +100,23 @@ void EditorWidget::highlightCurrentLine() {
 
 void LineNumberArea::paintEvent(QPaintEvent *event) {
     static_cast<EditorWidget *>(parent())->lineNumberAreaPaintEvent(event);
+}
+
+void EditorWidget::setSyntaxHighlighter(ISyntaxHighlighter *highlighter) {
+    syntaxHighlighter = highlighter;
+    if (syntaxHighlighter) {
+        syntaxHighlighter->attachToDocument(document());
+    }
+}
+
+QString EditorWidget::currentFilePath() const {
+    return filePath;
+}
+
+void EditorWidget::setCurrentFilePath(const QString &path) {
+    filePath = path;
+}
+
+ISyntaxHighlighter *EditorWidget::getSyntaxHighlighter() const {
+    return syntaxHighlighter;
 }

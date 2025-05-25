@@ -2,7 +2,7 @@
  * @file main.cpp
  * @brief Entry point for the Coda text editor application.
  *        Initializes and starts the Qt event loop.
- * @author Dario
+ * @author Dario Romandini
  */
 
 #include <QApplication>

@@ -1,19 +1,21 @@
 /**
  * @file MainWindow.h
  * @brief Main window class for the Coda text editor.
- * @author Dario
+ *        Provides file handling, menu integration, and dynamic syntax highlighting theme control.
+ * @author Dario Romandini
  */
 
 #pragma once
 
 #include <QMainWindow>
+#include <QString>
 
 class EditorWidget;
 
 /**
  * @class MainWindow
  * @brief The main application window of the Coda text editor.
- * Inherits from QMainWindow and manages file operations.
+ * Inherits from QMainWindow and manages file operations, syntax highlighting, and theme switching.
  */
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -32,7 +34,7 @@ public:
 
 private slots:
     /**
-     * @brief Opens a text file.
+     * @brief Opens a text file and applies appropriate syntax highlighting.
      */
     void openFile();
 
@@ -46,7 +48,17 @@ private slots:
      */
     void saveFileAs();
 
+    /**
+     * @brief Switches the theme to a light color scheme.
+     */
+    void setLightTheme();
+
+    /**
+     * @brief Switches the theme to a dark color scheme.
+     */
+    void setDarkTheme();
+
 private:
-    EditorWidget *editor; /**< The text editor widget. */
-    QString currentFilePath; /**< The current file's path. */
+    EditorWidget *editor;       ///< The text editor widget.
+    QString currentFilePath;    ///< The current file's path.
 };

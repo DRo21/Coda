@@ -12,24 +12,60 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # Enable automatic MOC generation for Qt
 set(CMAKE_AUTOMOC ON)
 
-# Find the required Qt6 modules
-find_package(Qt6 REQUIRED COMPONENTS Widgets)
+# Find packages
+find_package(Qt5 REQUIRED COMPONENTS Widgets)
+find_package(Lua REQUIRED)
+find_package(KF5SyntaxHighlighting REQUIRED)
 
-# Define source files for the project
+# Add include directories
+include_directories(
+    ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/src/core
+    ${CMAKE_SOURCE_DIR}/src/syntax
+    ${LUA_INCLUDE_DIR}
+)
+
+# Add sol2 (header-only library)
+include(FetchContent)
+FetchContent_Declare(
+    sol2
+    GIT_REPOSITORY https://github.com/ThePhD/sol2.git
+    GIT_TAG        v3.3.0
+)
+FetchContent_MakeAvailable(sol2)
+
+# Source files
 set(SOURCES
     src/main.cpp
-    src/MainWindow.cpp
-    src/EditorWidget.cpp
+    src/core/MainWindow.cpp
+    src/core/EditorWidget.cpp
+    src/core/ScriptingEngine.cpp
+    src/syntax/KSyntaxHighlightingAdapter.cpp
 )
 
-# Define header files for clarity
+# Header files (for clarity)
 set(HEADERS
-    src/MainWindow.h
-    src/EditorWidget.h
+    src/core/MainWindow.h
+    src/core/EditorWidget.h
+    src/core/ScriptingEngine.h
+    src/syntax/KSyntaxHighlightingAdapter.h
+    include/IPlugin.h
+    include/ISyntaxHighlighter.h
 )
 
-# Add the executable target
+# Add the executable
 add_executable(Coda ${SOURCES} ${HEADERS})
 
-# Link the executable with the Qt6 Widgets module
-target_link_libraries(Coda PRIVATE Qt6::Widgets)
+# Link libraries
+target_link_libraries(Coda
+    PRIVATE
+        Qt5::Widgets
+        sol2::sol2
+        ${LUA_LIBRARIES}
+        KF5::SyntaxHighlighting
+)
+
+# For Linux: Add pthread if needed
+if(UNIX)
+    target_link_libraries(Coda PRIVATE pthread)
+endif()

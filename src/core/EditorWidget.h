@@ -1,12 +1,14 @@
 /**
  * @file EditorWidget.h
  * @brief Editor widget for the Coda text editor, based on QPlainTextEdit.
- *        Provides the basic text editing area functionality with line numbers.
- * @author Dario
+ *        Provides the text editing area functionality with line numbers and syntax highlighting support.
+ *        Supports multiple languages via the ISyntaxHighlighter interface and KSyntaxHighlightingAdapter implementation.
+ * @author Dario Romandini
  */
 
 #pragma once
 
+#include "ISyntaxHighlighter.h"
 #include <QPlainTextEdit>
 #include <QWidget>
 
@@ -41,7 +43,7 @@ protected:
 /**
  * @class EditorWidget
  * @brief The text editing area of the Coda text editor.
- * Inherits from QPlainTextEdit and adds a line number margin.
+ * Inherits from QPlainTextEdit and adds a line number margin and syntax highlighting.
  */
 class EditorWidget : public QPlainTextEdit {
     Q_OBJECT
@@ -58,6 +60,30 @@ public:
      * @param event The paint event.
      */
     void lineNumberAreaPaintEvent(QPaintEvent *event);
+
+    /**
+     * @brief Sets the syntax highlighter.
+     * @param highlighter Pointer to an ISyntaxHighlighter implementation.
+     */
+    void setSyntaxHighlighter(ISyntaxHighlighter *highlighter);
+
+    /**
+     * @brief Gets the current file path (for language detection, etc.).
+     * @return File path as a QString.
+     */
+    QString currentFilePath() const;
+
+    /**
+     * @brief Sets the current file path (used for determining the file type and highlighter).
+     * @param path The new file path.
+     */
+    void setCurrentFilePath(const QString &path);
+
+    /**
+    * @brief Returns the currently attached syntax highlighter.
+    * @return Pointer to the ISyntaxHighlighter.
+    */
+    ISyntaxHighlighter *getSyntaxHighlighter() const;
 
 protected:
     /**
@@ -87,6 +113,8 @@ private slots:
 
 private:
     QWidget *lineNumberArea; ///< Widget for displaying line numbers.
+    ISyntaxHighlighter *syntaxHighlighter; ///< The syntax highlighter used by the editor.
+    QString filePath; ///< Path of the currently opened file.
 
     /**
      * @brief Computes the width of the line number area.
