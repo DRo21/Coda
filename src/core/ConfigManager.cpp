@@ -12,7 +12,7 @@
 #include <QDebug>
 
 ConfigManager::ConfigManager(const QString &configPath)
-    : configFilePath(configPath) {  // Store the config path
+    : configFilePath(configPath) {
     QFile file(configPath);
     if (file.exists()) {
         if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -20,15 +20,15 @@ ConfigManager::ConfigManager(const QString &configPath)
             QJsonDocument doc = QJsonDocument::fromJson(data);
             if (doc.isObject()) {
                 config = doc.object();
-                qInfo() << "Loaded config from:" << configPath;
+                qInfo() << "[ConfigManager] Loaded config from:" << configPath;
             } else {
-                qWarning() << "Invalid JSON format in config file.";
+                qWarning() << "[ConfigManager] Invalid JSON format in config file.";
             }
         } else {
-            qWarning() << "Could not open config file for reading:" << configPath;
+            qWarning() << "[ConfigManager] Could not open config file for reading:" << configPath;
         }
     } else {
-        qWarning() << "Config file not found, generating default config.";
+        qWarning() << "[ConfigManager] Config file not found, generating default config.";
         generateDefaultConfig(configPath);
     }
 }
@@ -89,6 +89,7 @@ void ConfigManager::generateDefaultConfig(const QString &configPath) {
     shortcuts["duplicateLine"] = "Ctrl+D";
     shortcuts["moveLineUp"] = "Alt+Up";
     shortcuts["moveLineDown"] = "Alt+Down";
+    shortcuts["toggleTerminal"] = "Ctrl+`";
 
     QJsonArray plugins;
     QJsonObject plugin1;
@@ -107,9 +108,9 @@ void ConfigManager::generateDefaultConfig(const QString &configPath) {
     if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         file.write(doc.toJson(QJsonDocument::Indented));
         file.close();
-        qInfo() << "Default config created at:" << configPath;
+        qInfo() << "[ConfigManager] Default config created at:" << configPath;
     } else {
-        qWarning() << "Failed to write default config at:" << configPath;
+        qWarning() << "[ConfigManager] Failed to write default config at:" << configPath;
     }
 
     config = defaultConfig;

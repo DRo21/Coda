@@ -17,7 +17,17 @@ find_package(Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Lua REQUIRED)
 find_package(KF5SyntaxHighlighting REQUIRED)
 
-# Add include directories
+# Find QTermWidget5 (via pkg-config)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(QTermWidget5 REQUIRED IMPORTED_TARGET qtermwidget5)
+
+if (QTermWidget5_FOUND)
+    set(QTERM_TARGET PkgConfig::QTermWidget5)
+else()
+    message(FATAL_ERROR "QTermWidget5 not found via pkg-config. Please install libqtermwidget5-1-dev.")
+endif()
+
+# Include directories
 include_directories(
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/src/core
@@ -70,9 +80,10 @@ target_link_libraries(Coda
         sol2::sol2
         ${LUA_LIBRARIES}
         KF5::SyntaxHighlighting
+        ${QTERM_TARGET}
 )
 
-# For dev
+# Post-build: Copy resources folder
 add_custom_command(TARGET Coda POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_SOURCE_DIR}/resources

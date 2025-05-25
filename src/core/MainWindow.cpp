@@ -2,7 +2,7 @@
  * @file MainWindow.cpp
  * @brief Implementation of the MainWindow class for the Coda text editor.
  *        Provides file handling, menu integration, syntax highlighting,
- *        Lua scripting, theming, and shortcut management via ShortcutManager.
+ *        Lua scripting, theming, embedded terminal, and shortcut management via ShortcutManager.
  * @author Dario Romandini
  */
 
@@ -18,10 +18,14 @@
 #include <QStandardPaths>
 #include <QApplication>
 #include <QAction>
+#include <QVBoxLayout>
+#include <qtermwidget5/qtermwidget.h>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
       editor(new EditorWidget(this)),
+      terminal(new QTermWidget),
+      splitter(new QSplitter(Qt::Vertical, this)),
       scriptingEngine(new ScriptingEngine(editor)),
       configManager(new ConfigManager(
           QStandardPaths::locate(QStandardPaths::AppConfigLocation, "config.json").isEmpty()
@@ -31,7 +35,13 @@ MainWindow::MainWindow(QWidget *parent)
       shortcutManager(new ShortcutManager(configManager, this)),
       pluginManager(new PluginManager(scriptingEngine)) {
 
-    setCentralWidget(editor);
+    splitter->addWidget(editor);
+    splitter->addWidget(terminal);
+    splitter->setStretchFactor(0, 3);
+    splitter->setStretchFactor(1, 1);
+    terminal->hide();
+
+    setCentralWidget(splitter);
     setWindowTitle("Coda");
     resize(1200, 800);
 
@@ -71,6 +81,7 @@ void MainWindow::setupMenus() {
     editMenu->addAction("Select All", this, &MainWindow::selectAll);
 
     auto *viewMenu = menuBar()->addMenu("&View");
+    viewMenu->addAction("Toggle Terminal", this, &MainWindow::toggleTerminal);
     viewMenu->addAction("Dark Theme", this, &MainWindow::applyDarkTheme);
     viewMenu->addAction("Light Theme", this, &MainWindow::applyLightTheme);
 
@@ -93,6 +104,7 @@ void MainWindow::setupShortcuts() {
     shortcutManager->bindShortcut("selectAll", this, &MainWindow::selectAll);
 
     shortcutManager->bindShortcut("runLuaScript", this, &MainWindow::runLuaScript);
+    shortcutManager->bindShortcut("toggleTerminal", this, &MainWindow::toggleTerminal);
     shortcutManager->bindShortcut("toggleComment", this, []() { qInfo() << "Toggle Comment triggered"; });
     shortcutManager->bindShortcut("duplicateLine", this, []() { qInfo() << "Duplicate Line triggered"; });
     shortcutManager->bindShortcut("moveLineUp", this, []() { qInfo() << "Move Line Up triggered"; });
@@ -102,6 +114,15 @@ void MainWindow::setupShortcuts() {
     shortcutManager->bindShortcut("findPrevious", this, []() { qInfo() << "Find Previous triggered"; });
     shortcutManager->bindShortcut("replace", this, []() { qInfo() << "Replace triggered"; });
     shortcutManager->bindShortcut("goToLine", this, []() { qInfo() << "Go To Line triggered"; });
+}
+
+void MainWindow::toggleTerminal() {
+    if (terminal->isVisible()) {
+        terminal->hide();
+    } else {
+        terminal->show();
+        terminal->setFocus();
+    }
 }
 
 void MainWindow::newFile() {

@@ -2,7 +2,7 @@
  * @file MainWindow.h
  * @brief Main window class for the Coda text editor.
  *        Provides file handling, menu integration, syntax highlighting,
- *        Lua scripting support, theme loading, and shortcut management via ShortcutManager.
+ *        Lua scripting support, theme loading, embedded terminal, and shortcut management via ShortcutManager.
  * @author Dario Romandini
  */
 
@@ -10,12 +10,15 @@
 
 #include <QMainWindow>
 #include <QString>
+#include <QSplitter>
+
 #include "ScriptingEngine.h"
 #include "PluginManager.h"
 #include "ConfigManager.h"
 #include "ShortcutManager.h"
 
 class EditorWidget;
+class QTermWidget;
 
 /**
  * @class MainWindow
@@ -46,12 +49,16 @@ private slots:
     void applyDarkTheme();
     void applyLightTheme();
 
+    void toggleTerminal();  ///< Show/hide the embedded terminal
+
 private:
     void setupMenus();
     void setupShortcuts();
     void applyTheme(const QString &themeName);
 
     EditorWidget *editor;
+    QTermWidget *terminal;            ///< Embedded terminal widget (QTermWidget)
+    QSplitter *splitter;              ///< Splitter for resizing editor/terminal
     QString currentFilePath;
     ScriptingEngine *scriptingEngine;
     PluginManager *pluginManager;

@@ -12,7 +12,7 @@
 ShortcutManager::ShortcutManager(ConfigManager *configManager, QObject *parent)
     : QObject(parent), configManager(configManager) {
     if (!configManager) {
-        qWarning() << "ShortcutManager: ConfigManager is null!";
+        qWarning() << "[ShortcutManager] ConfigManager is null!";
         return;
     }
 
@@ -21,16 +21,16 @@ ShortcutManager::ShortcutManager(ConfigManager *configManager, QObject *parent)
         "undo", "redo", "cut", "copy", "paste", "selectAll",
         "runLuaScript", "toggleComment", "duplicateLine",
         "moveLineUp", "moveLineDown", "find", "findNext",
-        "findPrevious", "replace", "goToLine"
+        "findPrevious", "replace", "goToLine", "toggleTerminal"
     };
 
     for (const QString &key : keys) {
         QString shortcutString = configManager->getShortcut(key);
         if (!shortcutString.isEmpty()) {
             shortcuts[key] = QKeySequence(shortcutString);
-            qInfo() << "Loaded shortcut:" << key << "=>" << shortcutString;
+            qInfo() << "[ShortcutManager] Loaded shortcut:" << key << "=>" << shortcutString;
         } else {
-            qWarning() << "No shortcut defined for action:" << key;
+            qWarning() << "[ShortcutManager] No shortcut defined for action:" << key;
         }
     }
 }
