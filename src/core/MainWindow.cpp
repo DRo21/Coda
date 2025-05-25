@@ -61,6 +61,8 @@ void MainWindow::openFile() {
             auto *highlighter = new KSyntaxHighlightingAdapter(editor->document());
             highlighter->setFilePath(currentFilePath);
             editor->setSyntaxHighlighter(highlighter);
+
+            scriptingEngine->triggerEvent("onFileOpen", currentFilePath.toStdString());
         } else {
             QMessageBox::warning(this, "Error", "Failed to open file");
         }
@@ -79,6 +81,8 @@ void MainWindow::saveFile() {
         out << editor->toPlainText();
         file.close();
         setWindowTitle("Coda - " + currentFilePath);
+
+        scriptingEngine->triggerEvent("onFileSave", currentFilePath.toStdString());
     } else {
         QMessageBox::warning(this, "Error", "Failed to save file");
     }
@@ -91,6 +95,7 @@ void MainWindow::saveFileAs() {
         saveFile();
     }
 }
+
 
 void MainWindow::setLightTheme() {
     auto *highlighter = dynamic_cast<KSyntaxHighlightingAdapter *>(editor->getSyntaxHighlighter());

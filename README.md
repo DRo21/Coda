@@ -19,7 +19,7 @@
 
 - **C++20 compiler** (e.g., GCC 11+, Clang 12+, MSVC 2019+)
 - **CMake 3.16+**
-- **Qt 6** (Widgets module)
+- **Qt 5** (Widgets module)
 
 ### Build Steps
 

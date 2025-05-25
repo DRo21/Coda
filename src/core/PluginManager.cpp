@@ -1,7 +1,7 @@
 /**
  * @file PluginManager.cpp
  * @brief Implementation of the PluginManager class for Coda. Loads and executes Lua plugins based on JSON configuration.
- * @author Dario
+ * @author Dario Romandini
  */
 
 #include "PluginManager.h"
