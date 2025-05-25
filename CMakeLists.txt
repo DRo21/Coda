@@ -41,6 +41,7 @@ set(SOURCES
     src/core/EditorWidget.cpp
     src/core/ScriptingEngine.cpp
     src/syntax/KSyntaxHighlightingAdapter.cpp
+    src/core/PluginManager.cpp
 )
 
 # Header files (for clarity)
@@ -49,6 +50,7 @@ set(HEADERS
     src/core/EditorWidget.h
     src/core/ScriptingEngine.h
     src/syntax/KSyntaxHighlightingAdapter.h
+    src/core/PluginManager.h
     include/IPlugin.h
     include/ISyntaxHighlighter.h
 )
@@ -69,3 +71,11 @@ target_link_libraries(Coda
 if(UNIX)
     target_link_libraries(Coda PRIVATE pthread)
 endif()
+
+# Install the Coda binary
+install(TARGETS Coda DESTINATION bin)
+
+# Install the plugins.json and plugins folder
+install(FILES plugins.json DESTINATION share/coda)
+
+install(DIRECTORY plugins/ DESTINATION share/coda)

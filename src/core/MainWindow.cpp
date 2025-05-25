@@ -1,7 +1,7 @@
 /**
  * @file MainWindow.cpp
  * @brief Implementation of the MainWindow class for the Coda text editor.
- *        Provides file handling, menu integration, dynamic syntax highlighting, theme switching, and Lua scripting support.
+ *        Provides file handling, menu integration, dynamic syntax highlighting, theme switching, and Lua scripting support via JSON-configured plugins.
  *        Uses KSyntaxHighlighting for multi-language support with OCP design principles.
  * @author Dario Romandini
  */
@@ -11,7 +11,7 @@
 #include <QMessageBox>
 #include <QTextStream>
 #include <QMenuBar>
-
+#include <QStandardPaths>
 #include <KSyntaxHighlighting/Repository>
 
 #include "MainWindow.h"
@@ -19,7 +19,8 @@
 #include "KSyntaxHighlightingAdapter.h"
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), editor(new EditorWidget(this)), scriptingEngine(new ScriptingEngine(editor)) {
+    : QMainWindow(parent), editor(new EditorWidget(this)), scriptingEngine(new ScriptingEngine(editor)),
+      pluginManager(new PluginManager(scriptingEngine)) {
     setCentralWidget(editor);
     setWindowTitle("Coda");
 
@@ -36,9 +37,13 @@ MainWindow::MainWindow(QWidget *parent)
 
     auto *toolsMenu = menuBar()->addMenu("&Tools");
     toolsMenu->addAction("Run Lua Script", this, &MainWindow::runLuaScript);
+
+    QString pluginConfigPath = QStandardPaths::locate(QStandardPaths::AppDataLocation, "plugins.json");
+    pluginManager->loadPlugins(pluginConfigPath);
 }
 
 MainWindow::~MainWindow() {
+    delete pluginManager;
     delete scriptingEngine;
 }
 

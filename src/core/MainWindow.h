@@ -1,7 +1,7 @@
 /**
  * @file MainWindow.h
  * @brief Main window class for the Coda text editor.
- *        Provides file handling, menu integration, dynamic syntax highlighting, and Lua scripting support.
+ *        Provides file handling, menu integration, dynamic syntax highlighting, and Lua scripting support via JSON-configured plugins.
  * @author Dario Romandini
  */
 
@@ -10,6 +10,7 @@
 #include <QMainWindow>
 #include <QString>
 #include "ScriptingEngine.h"
+#include "PluginManager.h"
 
 class EditorWidget;
 
@@ -68,4 +69,5 @@ private:
     EditorWidget *editor;             ///< The text editor widget.
     QString currentFilePath;          ///< The current file's path.
     ScriptingEngine *scriptingEngine; ///< The Lua scripting engine.
+    PluginManager *pluginManager;     ///< The plugin manager for loading and executing Lua plugins.
 };
