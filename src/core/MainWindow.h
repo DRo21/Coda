@@ -11,13 +11,14 @@
 #include <QString>
 #include "ScriptingEngine.h"
 #include "PluginManager.h"
+#include "ConfigManager.h"
 
 class EditorWidget;
 
 /**
  * @class MainWindow
  * @brief The main application window of the Coda text editor.
- * Inherits from QMainWindow and manages file operations, syntax highlighting, theme switching, and Lua scripting integration.
+ *        Inherits from QMainWindow and manages file operations, syntax highlighting, theme switching, and Lua scripting integration.
  */
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -70,4 +71,5 @@ private:
     QString currentFilePath;          ///< The current file's path.
     ScriptingEngine *scriptingEngine; ///< The Lua scripting engine.
     PluginManager *pluginManager;     ///< The plugin manager for loading and executing Lua plugins.
+    ConfigManager *configManager;     ///< Configuration manager for app settings (JSON-based).
 };

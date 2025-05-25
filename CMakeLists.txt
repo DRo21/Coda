@@ -42,6 +42,7 @@ set(SOURCES
     src/core/ScriptingEngine.cpp
     src/syntax/KSyntaxHighlightingAdapter.cpp
     src/core/PluginManager.cpp
+    src/core/ConfigManager.cpp
 )
 
 # Header files (for clarity)
@@ -51,7 +52,7 @@ set(HEADERS
     src/core/ScriptingEngine.h
     src/syntax/KSyntaxHighlightingAdapter.h
     src/core/PluginManager.h
-    include/IPlugin.h
+    include/ConfigManager.h
     include/ISyntaxHighlighter.h
 )
 

@@ -19,32 +19,53 @@
 #include "KSyntaxHighlightingAdapter.h"
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), editor(new EditorWidget(this)), scriptingEngine(new ScriptingEngine(editor)),
+    : QMainWindow(parent),
+      editor(new EditorWidget(this)),
+      scriptingEngine(new ScriptingEngine(editor)),
       pluginManager(new PluginManager(scriptingEngine)) {
+
     setCentralWidget(editor);
     setWindowTitle("Coda");
+    resize(1200, 800);
 
+    // Load configuration
+    QString configPath = QStandardPaths::locate(QStandardPaths::AppConfigLocation, "config.json");
+    if (configPath.isEmpty()) configPath = "config.json";
+    configManager = new ConfigManager(configPath);
+
+    // Menus
     auto *fileMenu = menuBar()->addMenu("&File");
-    fileMenu->addAction("Open", this, &MainWindow::openFile);
-    fileMenu->addAction("Save", this, &MainWindow::saveFile);
-    fileMenu->addAction("Save As", this, &MainWindow::saveFileAs);
+    fileMenu->addAction("Open", this, &MainWindow::openFile, QKeySequence(configManager->getShortcut("open")));
+    fileMenu->addAction("Save", this, &MainWindow::saveFile, QKeySequence(configManager->getShortcut("save")));
+    fileMenu->addAction("Save As", this, &MainWindow::saveFileAs, QKeySequence(configManager->getShortcut("saveAs")));
     fileMenu->addSeparator();
-    fileMenu->addAction("Exit", this, &QWidget::close);
+    fileMenu->addAction("Exit", this, &QWidget::close, QKeySequence(configManager->getShortcut("exit")));
 
     auto *viewMenu = menuBar()->addMenu("&View");
     viewMenu->addAction("Light Theme", this, &MainWindow::setLightTheme);
     viewMenu->addAction("Dark Theme", this, &MainWindow::setDarkTheme);
 
     auto *toolsMenu = menuBar()->addMenu("&Tools");
-    toolsMenu->addAction("Run Lua Script", this, &MainWindow::runLuaScript);
+    toolsMenu->addAction("Run Lua Script", this, &MainWindow::runLuaScript, QKeySequence(configManager->getShortcut("runLuaScript")));
 
-    QString pluginConfigPath = QStandardPaths::locate(QStandardPaths::AppDataLocation, "plugins.json");
-    pluginManager->loadPlugins(pluginConfigPath);
+    // Apply theme from config
+    QString theme = configManager->getTheme();
+    if (theme.toLower() == "dark") {
+        setDarkTheme();
+    } else {
+        setLightTheme();
+    }
+
+    // Load plugins from config.json
+    for (const auto &pluginPath : configManager->getPluginList()) {
+        pluginManager->loadPlugins(pluginPath);
+    }
 }
 
 MainWindow::~MainWindow() {
     delete pluginManager;
     delete scriptingEngine;
+    delete configManager;
 }
 
 void MainWindow::openFile() {
@@ -95,7 +116,6 @@ void MainWindow::saveFileAs() {
         saveFile();
     }
 }
-
 
 void MainWindow::setLightTheme() {
     auto *highlighter = dynamic_cast<KSyntaxHighlightingAdapter *>(editor->getSyntaxHighlighter());
