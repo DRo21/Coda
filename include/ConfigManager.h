@@ -15,8 +15,8 @@
 
 /**
  * @class ConfigManager
- * @brief Singleton-like manager for application configuration.
- *        Loads config.json and provides access to key settings.
+ * @brief Manager for application configuration.
+ *        Loads config.json and provides access to key settings such as shortcuts, theme, and plugins.
  */
 class ConfigManager {
 public:
@@ -46,8 +46,15 @@ public:
      */
     std::vector<QString> getPluginList() const;
 
+    /**
+     * @brief Get the path to the loaded configuration file.
+     * @return The absolute path as a QString.
+     */
+    QString getConfigPath() const;
+
 private:
-    QJsonObject config; ///< The parsed JSON configuration.
+    QJsonObject config;       ///< The parsed JSON configuration.
+    QString configFilePath;   ///< The path to the configuration file.
 
     /**
      * @brief Generates a default config.json file with sensible defaults.

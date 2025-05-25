@@ -6,11 +6,24 @@
         }
     ],
     "shortcuts": {
+        "openFile": "Ctrl+O",
+        "saveFile": "Ctrl+S",
+        "saveFileAs": "Ctrl+Shift+S",
         "exit": "Ctrl+Q",
-        "open": "Ctrl+O",
         "runLuaScript": "Ctrl+R",
-        "save": "Ctrl+S",
-        "saveAs": "Ctrl+Shift+S"
+        "undo": "Ctrl+Z",
+        "redo": "Ctrl+Y",
+        "copy": "Ctrl+C",
+        "paste": "Ctrl+V",
+        "cut": "Ctrl+X",
+        "find": "Ctrl+F",
+        "replace": "Ctrl+H",
+        "selectAll": "Ctrl+A",
+        "goToLine": "Ctrl+G",
+        "newFile": "Ctrl+N",
+        "newWindow": "Ctrl+Shift+N",
+        "closeFile": "Ctrl+W",
+        "toggleComment": "Ctrl+/"
     },
     "theme": "Dark"
 }

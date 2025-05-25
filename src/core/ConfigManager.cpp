@@ -11,7 +11,8 @@
 #include <QJsonDocument>
 #include <QDebug>
 
-ConfigManager::ConfigManager(const QString &configPath) {
+ConfigManager::ConfigManager(const QString &configPath)
+    : configFilePath(configPath) {  // Store the config path
     QFile file(configPath);
     if (file.exists()) {
         if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -60,6 +61,10 @@ std::vector<QString> ConfigManager::getPluginList() const {
     return plugins;
 }
 
+QString ConfigManager::getConfigPath() const {
+    return configFilePath;
+}
+
 void ConfigManager::generateDefaultConfig(const QString &configPath) {
     QJsonObject shortcuts;
     shortcuts["open"] = "Ctrl+O";
@@ -67,6 +72,23 @@ void ConfigManager::generateDefaultConfig(const QString &configPath) {
     shortcuts["saveAs"] = "Ctrl+Shift+S";
     shortcuts["exit"] = "Ctrl+Q";
     shortcuts["runLuaScript"] = "Ctrl+R";
+    shortcuts["newFile"] = "Ctrl+N";
+    shortcuts["closeFile"] = "Ctrl+W";
+    shortcuts["undo"] = "Ctrl+Z";
+    shortcuts["redo"] = "Ctrl+Y";
+    shortcuts["cut"] = "Ctrl+X";
+    shortcuts["copy"] = "Ctrl+C";
+    shortcuts["paste"] = "Ctrl+V";
+    shortcuts["selectAll"] = "Ctrl+A";
+    shortcuts["find"] = "Ctrl+F";
+    shortcuts["findNext"] = "F3";
+    shortcuts["findPrevious"] = "Shift+F3";
+    shortcuts["replace"] = "Ctrl+H";
+    shortcuts["goToLine"] = "Ctrl+G";
+    shortcuts["toggleComment"] = "Ctrl+/";
+    shortcuts["duplicateLine"] = "Ctrl+D";
+    shortcuts["moveLineUp"] = "Alt+Up";
+    shortcuts["moveLineDown"] = "Alt+Down";
 
     QJsonArray plugins;
     QJsonObject plugin1;

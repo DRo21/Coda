@@ -44,6 +44,7 @@ set(SOURCES
     src/core/PluginManager.cpp
     src/core/ConfigManager.cpp
     src/core/ResourceLoader.cpp
+    src/core/ShortcutManager.cpp
 )
 
 # Header files (for clarity)
@@ -53,6 +54,7 @@ set(HEADERS
     src/core/ScriptingEngine.h
     src/syntax/KSyntaxHighlightingAdapter.h
     src/core/PluginManager.h
+    src/core/ShortcutManager.h
     include/ConfigManager.h
     include/ISyntaxHighlighter.h
     include/ResourceLoader.h

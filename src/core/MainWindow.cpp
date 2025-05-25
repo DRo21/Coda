@@ -1,10 +1,14 @@
 /**
  * @file MainWindow.cpp
  * @brief Implementation of the MainWindow class for the Coda text editor.
- *        Provides file handling, menu integration, dynamic syntax highlighting,
- *        Lua scripting support, and theme switching via .qss files.
+ *        Provides file handling, menu integration, syntax highlighting,
+ *        Lua scripting, theming, and shortcut management via ShortcutManager.
  * @author Dario Romandini
  */
+
+#include "MainWindow.h"
+#include "EditorWidget.h"
+#include "KSyntaxHighlightingAdapter.h"
 
 #include <QFile>
 #include <QFileDialog>
@@ -13,46 +17,29 @@
 #include <QMenuBar>
 #include <QStandardPaths>
 #include <QApplication>
-#include <KSyntaxHighlighting/Repository>
-
-#include "MainWindow.h"
-#include "EditorWidget.h"
-#include "KSyntaxHighlightingAdapter.h"
+#include <QAction>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
       editor(new EditorWidget(this)),
       scriptingEngine(new ScriptingEngine(editor)),
+      configManager(new ConfigManager(
+          QStandardPaths::locate(QStandardPaths::AppConfigLocation, "config.json").isEmpty()
+          ? "config.json"
+          : QStandardPaths::locate(QStandardPaths::AppConfigLocation, "config.json")
+      )),
+      shortcutManager(new ShortcutManager(configManager, this)),
       pluginManager(new PluginManager(scriptingEngine)) {
 
     setCentralWidget(editor);
     setWindowTitle("Coda");
     resize(1200, 800);
 
-    // Load configuration
-    QString configPath = QStandardPaths::locate(QStandardPaths::AppConfigLocation, "config.json");
-    if (configPath.isEmpty()) configPath = "config.json";
-    configManager = new ConfigManager(configPath);
+    setupMenus();
+    setupShortcuts();
 
-    // Menus
-    auto *fileMenu = menuBar()->addMenu("&File");
-    fileMenu->addAction("Open", this, &MainWindow::openFile, QKeySequence(configManager->getShortcut("open")));
-    fileMenu->addAction("Save", this, &MainWindow::saveFile, QKeySequence(configManager->getShortcut("save")));
-    fileMenu->addAction("Save As", this, &MainWindow::saveFileAs, QKeySequence(configManager->getShortcut("saveAs")));
-    fileMenu->addSeparator();
-    fileMenu->addAction("Exit", this, &QWidget::close, QKeySequence(configManager->getShortcut("exit")));
-
-    auto *viewMenu = menuBar()->addMenu("&View");
-    viewMenu->addAction("Dark Theme", [this]() { applyTheme("dark"); });
-    viewMenu->addAction("Light Theme", [this]() { applyTheme("light"); });
-
-    auto *toolsMenu = menuBar()->addMenu("&Tools");
-    toolsMenu->addAction("Run Lua Script", this, &MainWindow::runLuaScript, QKeySequence(configManager->getShortcut("runLuaScript")));
-
-    // Apply theme from config
     applyTheme(configManager->getTheme());
 
-    // Load plugins from config.json
     for (const auto &pluginPath : configManager->getPluginList()) {
         pluginManager->loadPlugins(pluginPath);
     }
@@ -62,6 +49,64 @@ MainWindow::~MainWindow() {
     delete pluginManager;
     delete scriptingEngine;
     delete configManager;
+    delete shortcutManager;
+}
+
+void MainWindow::setupMenus() {
+    auto *fileMenu = menuBar()->addMenu("&File");
+    fileMenu->addAction("New File", this, &MainWindow::newFile);
+    fileMenu->addAction("Open", this, &MainWindow::openFile);
+    fileMenu->addAction("Save", this, &MainWindow::saveFile);
+    fileMenu->addAction("Save As", this, &MainWindow::saveFileAs);
+    fileMenu->addAction("Close File", this, &MainWindow::closeFile);
+    fileMenu->addSeparator();
+    fileMenu->addAction("Exit", this, &QWidget::close);
+
+    auto *editMenu = menuBar()->addMenu("&Edit");
+    editMenu->addAction("Undo", this, &MainWindow::undo);
+    editMenu->addAction("Redo", this, &MainWindow::redo);
+    editMenu->addAction("Cut", this, &MainWindow::cut);
+    editMenu->addAction("Copy", this, &MainWindow::copy);
+    editMenu->addAction("Paste", this, &MainWindow::paste);
+    editMenu->addAction("Select All", this, &MainWindow::selectAll);
+
+    auto *viewMenu = menuBar()->addMenu("&View");
+    viewMenu->addAction("Dark Theme", this, &MainWindow::applyDarkTheme);
+    viewMenu->addAction("Light Theme", this, &MainWindow::applyLightTheme);
+
+    auto *toolsMenu = menuBar()->addMenu("&Tools");
+    toolsMenu->addAction("Run Lua Script", this, &MainWindow::runLuaScript);
+}
+
+void MainWindow::setupShortcuts() {
+    shortcutManager->bindShortcut("newFile", this, &MainWindow::newFile);
+    shortcutManager->bindShortcut("open", this, &MainWindow::openFile);
+    shortcutManager->bindShortcut("save", this, &MainWindow::saveFile);
+    shortcutManager->bindShortcut("saveAs", this, &MainWindow::saveFileAs);
+    shortcutManager->bindShortcut("closeFile", this, &MainWindow::closeFile);
+
+    shortcutManager->bindShortcut("undo", this, &MainWindow::undo);
+    shortcutManager->bindShortcut("redo", this, &MainWindow::redo);
+    shortcutManager->bindShortcut("cut", this, &MainWindow::cut);
+    shortcutManager->bindShortcut("copy", this, &MainWindow::copy);
+    shortcutManager->bindShortcut("paste", this, &MainWindow::paste);
+    shortcutManager->bindShortcut("selectAll", this, &MainWindow::selectAll);
+
+    shortcutManager->bindShortcut("runLuaScript", this, &MainWindow::runLuaScript);
+    shortcutManager->bindShortcut("toggleComment", this, []() { qInfo() << "Toggle Comment triggered"; });
+    shortcutManager->bindShortcut("duplicateLine", this, []() { qInfo() << "Duplicate Line triggered"; });
+    shortcutManager->bindShortcut("moveLineUp", this, []() { qInfo() << "Move Line Up triggered"; });
+    shortcutManager->bindShortcut("moveLineDown", this, []() { qInfo() << "Move Line Down triggered"; });
+    shortcutManager->bindShortcut("find", this, []() { qInfo() << "Find triggered"; });
+    shortcutManager->bindShortcut("findNext", this, []() { qInfo() << "Find Next triggered"; });
+    shortcutManager->bindShortcut("findPrevious", this, []() { qInfo() << "Find Previous triggered"; });
+    shortcutManager->bindShortcut("replace", this, []() { qInfo() << "Replace triggered"; });
+    shortcutManager->bindShortcut("goToLine", this, []() { qInfo() << "Go To Line triggered"; });
+}
+
+void MainWindow::newFile() {
+    editor->clear();
+    currentFilePath.clear();
 }
 
 void MainWindow::openFile() {
@@ -113,12 +158,28 @@ void MainWindow::saveFileAs() {
     }
 }
 
+void MainWindow::closeFile() {
+    editor->clear();
+    currentFilePath.clear();
+    setWindowTitle("Coda");
+}
+
+void MainWindow::undo() { editor->undo(); }
+void MainWindow::redo() { editor->redo(); }
+void MainWindow::cut() { editor->cut(); }
+void MainWindow::copy() { editor->copy(); }
+void MainWindow::paste() { editor->paste(); }
+void MainWindow::selectAll() { editor->selectAll(); }
+
 void MainWindow::runLuaScript() {
     QString scriptPath = QFileDialog::getOpenFileName(this, "Select Lua Script");
     if (!scriptPath.isEmpty()) {
         scriptingEngine->runScript(scriptPath.toStdString());
     }
 }
+
+void MainWindow::applyDarkTheme() { applyTheme("dark"); }
+void MainWindow::applyLightTheme() { applyTheme("light"); }
 
 void MainWindow::applyTheme(const QString &themeName) {
     QString themeFile = "styles/" + themeName.toLower() + ".qss";
