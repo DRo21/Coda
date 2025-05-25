@@ -8,17 +8,22 @@
 #pragma once
 
 #include <sol/sol.hpp>
+#include <string>
+
+class EditorWidget;
 
 /**
  * @class ScriptingEngine
  * @brief Manages the embedded Lua scripting engine and script execution.
+ *        Exposes core editor functionality for plugins via Lua.
  */
 class ScriptingEngine {
 public:
     /**
      * @brief Constructor. Initializes the Lua state.
+     * @param editor Pointer to the EditorWidget for API exposure.
      */
-    ScriptingEngine();
+    explicit ScriptingEngine(EditorWidget *editor);
 
     /**
      * @brief Executes a Lua script file.
@@ -27,10 +32,14 @@ public:
     void runScript(const std::string &path);
 
     /**
-     * @brief Exposes core Coda API functions to Lua.
+     * @brief Access the Lua state for custom extensions.
+     * @return Reference to the Lua state.
      */
-    void registerCodaAPI();
+    sol::state &getLua();
 
 private:
-    sol::state lua; ///< Lua interpreter state.
+    void registerCodaAPI();
+
+    sol::state lua;          ///< Lua interpreter state.
+    EditorWidget *editor;    ///< Editor widget for text manipulation.
 };

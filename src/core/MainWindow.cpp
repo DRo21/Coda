@@ -1,7 +1,7 @@
 /**
  * @file MainWindow.cpp
  * @brief Implementation of the MainWindow class for the Coda text editor.
- *        Provides file handling, menu integration, and dynamic syntax highlighting with theme support.
+ *        Provides file handling, menu integration, dynamic syntax highlighting, theme switching, and Lua scripting support.
  *        Uses KSyntaxHighlighting for multi-language support with OCP design principles.
  * @author Dario Romandini
  */
@@ -19,7 +19,7 @@
 #include "KSyntaxHighlightingAdapter.h"
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), editor(new EditorWidget(this)) {
+    : QMainWindow(parent), editor(new EditorWidget(this)), scriptingEngine(new ScriptingEngine(editor)) {
     setCentralWidget(editor);
     setWindowTitle("Coda");
 
@@ -33,9 +33,14 @@ MainWindow::MainWindow(QWidget *parent)
     auto *viewMenu = menuBar()->addMenu("&View");
     viewMenu->addAction("Light Theme", this, &MainWindow::setLightTheme);
     viewMenu->addAction("Dark Theme", this, &MainWindow::setDarkTheme);
+
+    auto *toolsMenu = menuBar()->addMenu("&Tools");
+    toolsMenu->addAction("Run Lua Script", this, &MainWindow::runLuaScript);
 }
 
-MainWindow::~MainWindow() {}
+MainWindow::~MainWindow() {
+    delete scriptingEngine;
+}
 
 void MainWindow::openFile() {
     QString fileName = QFileDialog::getOpenFileName(this, "Open File");
@@ -95,5 +100,12 @@ void MainWindow::setDarkTheme() {
     if (highlighter) {
         KSyntaxHighlighting::Repository repo;
         highlighter->setTheme(repo.theme("Breeze Dark"));
+    }
+}
+
+void MainWindow::runLuaScript() {
+    QString scriptPath = QFileDialog::getOpenFileName(this, "Select Lua Script");
+    if (!scriptPath.isEmpty()) {
+        scriptingEngine->runScript(scriptPath.toStdString());
     }
 }
