@@ -1,7 +1,7 @@
 /**
  * @file MainWindow.cpp
  * @brief Implementation of the MainWindow class for the Coda text editor.
- *        Provides file handling, menu integration, and dynamic syntax highlighting with theme support.
+ *        Provides file handling, menu integration, dynamic syntax highlighting, theme switching, and Lua scripting support via JSON-configured plugins.
  *        Uses KSyntaxHighlighting for multi-language support with OCP design principles.
  * @author Dario Romandini
  */
@@ -11,7 +11,7 @@
 #include <QMessageBox>
 #include <QTextStream>
 #include <QMenuBar>
-
+#include <QStandardPaths>
 #include <KSyntaxHighlighting/Repository>
 
 #include "MainWindow.h"
@@ -19,7 +19,8 @@
 #include "KSyntaxHighlightingAdapter.h"
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), editor(new EditorWidget(this)) {
+    : QMainWindow(parent), editor(new EditorWidget(this)), scriptingEngine(new ScriptingEngine(editor)),
+      pluginManager(new PluginManager(scriptingEngine)) {
     setCentralWidget(editor);
     setWindowTitle("Coda");
 
@@ -33,9 +34,18 @@ MainWindow::MainWindow(QWidget *parent)
     auto *viewMenu = menuBar()->addMenu("&View");
     viewMenu->addAction("Light Theme", this, &MainWindow::setLightTheme);
     viewMenu->addAction("Dark Theme", this, &MainWindow::setDarkTheme);
+
+    auto *toolsMenu = menuBar()->addMenu("&Tools");
+    toolsMenu->addAction("Run Lua Script", this, &MainWindow::runLuaScript);
+
+    QString pluginConfigPath = QStandardPaths::locate(QStandardPaths::AppDataLocation, "plugins.json");
+    pluginManager->loadPlugins(pluginConfigPath);
 }
 
-MainWindow::~MainWindow() {}
+MainWindow::~MainWindow() {
+    delete pluginManager;
+    delete scriptingEngine;
+}
 
 void MainWindow::openFile() {
     QString fileName = QFileDialog::getOpenFileName(this, "Open File");
@@ -51,6 +61,8 @@ void MainWindow::openFile() {
             auto *highlighter = new KSyntaxHighlightingAdapter(editor->document());
             highlighter->setFilePath(currentFilePath);
             editor->setSyntaxHighlighter(highlighter);
+
+            scriptingEngine->triggerEvent("onFileOpen", currentFilePath.toStdString());
         } else {
             QMessageBox::warning(this, "Error", "Failed to open file");
         }
@@ -69,6 +81,8 @@ void MainWindow::saveFile() {
         out << editor->toPlainText();
         file.close();
         setWindowTitle("Coda - " + currentFilePath);
+
+        scriptingEngine->triggerEvent("onFileSave", currentFilePath.toStdString());
     } else {
         QMessageBox::warning(this, "Error", "Failed to save file");
     }
@@ -81,6 +95,7 @@ void MainWindow::saveFileAs() {
         saveFile();
     }
 }
+
 
 void MainWindow::setLightTheme() {
     auto *highlighter = dynamic_cast<KSyntaxHighlightingAdapter *>(editor->getSyntaxHighlighter());
@@ -95,5 +110,12 @@ void MainWindow::setDarkTheme() {
     if (highlighter) {
         KSyntaxHighlighting::Repository repo;
         highlighter->setTheme(repo.theme("Breeze Dark"));
+    }
+}
+
+void MainWindow::runLuaScript() {
+    QString scriptPath = QFileDialog::getOpenFileName(this, "Select Lua Script");
+    if (!scriptPath.isEmpty()) {
+        scriptingEngine->runScript(scriptPath.toStdString());
     }
 }

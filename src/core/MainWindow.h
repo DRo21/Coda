@@ -1,7 +1,7 @@
 /**
  * @file MainWindow.h
  * @brief Main window class for the Coda text editor.
- *        Provides file handling, menu integration, and dynamic syntax highlighting theme control.
+ *        Provides file handling, menu integration, dynamic syntax highlighting, and Lua scripting support via JSON-configured plugins.
  * @author Dario Romandini
  */
 
@@ -9,13 +9,15 @@
 
 #include <QMainWindow>
 #include <QString>
+#include "ScriptingEngine.h"
+#include "PluginManager.h"
 
 class EditorWidget;
 
 /**
  * @class MainWindow
  * @brief The main application window of the Coda text editor.
- * Inherits from QMainWindow and manages file operations, syntax highlighting, and theme switching.
+ * Inherits from QMainWindow and manages file operations, syntax highlighting, theme switching, and Lua scripting integration.
  */
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -58,7 +60,14 @@ private slots:
      */
     void setDarkTheme();
 
+    /**
+     * @brief Executes a Lua script selected by the user.
+     */
+    void runLuaScript();
+
 private:
-    EditorWidget *editor;       ///< The text editor widget.
-    QString currentFilePath;    ///< The current file's path.
+    EditorWidget *editor;             ///< The text editor widget.
+    QString currentFilePath;          ///< The current file's path.
+    ScriptingEngine *scriptingEngine; ///< The Lua scripting engine.
+    PluginManager *pluginManager;     ///< The plugin manager for loading and executing Lua plugins.
 };
