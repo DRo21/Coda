@@ -1,15 +1,22 @@
 /**
  * @file EditorWidget.cpp
- * @brief Implementation of the EditorWidget class for the Coda text editor.
- *        Provides the text editing area functionality with line numbers and syntax highlighting support.
- *        Integrates a LineNumberArea widget for displaying line numbers alongside the text editor.
- *        Supports multiple languages via the ISyntaxHighlighter interface and KSyntaxHighlightingAdapter implementation.
+ * @brief Implementation of EditorWidget for Coda. QSS-powered line numbers, current line highlighting, and syntax support.
  * @author Dario Romandini
  */
 
 #include "EditorWidget.h"
 #include <QPainter>
 #include <QTextBlock>
+
+EditorWidget::LineNumberArea::LineNumberArea(EditorWidget *editorWidget) : QWidget(editorWidget), editor(editorWidget) {}
+
+QSize EditorWidget::LineNumberArea::sizeHint() const {
+    return QSize(editor->lineNumberWidth(), 0);
+}
+
+void EditorWidget::LineNumberArea::paintEvent(QPaintEvent *event) {
+    editor->lineNumberAreaPaintEvent(event);
+}
 
 EditorWidget::EditorWidget(QWidget *parent) : QPlainTextEdit(parent) {
     lineNumberArea = new LineNumberArea(this);
@@ -24,22 +31,14 @@ EditorWidget::EditorWidget(QWidget *parent) : QPlainTextEdit(parent) {
 
     setLineWrapMode(QPlainTextEdit::NoWrap);
     setFont(QFont("Courier", 12));
-    filePath = ""; // Initialize file path
 }
 
-int EditorWidget::lineNumberAreaWidth() {
-    int digits = 1;
-    int max = qMax(1, blockCount());
-    while (max >= 10) {
-        max /= 10;
-        ++digits;
-    }
-    int space = 3 + fontMetrics().horizontalAdvance(QLatin1Char('9')) * digits;
-    return space;
+int EditorWidget::computeLineNumberAreaWidth() const {
+    return lineNumberAreaWidthValue > 0 ? lineNumberAreaWidthValue : 40;
 }
 
 void EditorWidget::updateLineNumberAreaWidth(int) {
-    setViewportMargins(lineNumberAreaWidth(), 0, 0, 0);
+    setViewportMargins(computeLineNumberAreaWidth(), 0, 0, 0);
 }
 
 void EditorWidget::updateLineNumberArea(const QRect &rect, int dy) {
@@ -54,15 +53,15 @@ void EditorWidget::updateLineNumberArea(const QRect &rect, int dy) {
 
 void EditorWidget::resizeEvent(QResizeEvent *event) {
     QPlainTextEdit::resizeEvent(event);
-
     QRect cr = contentsRect();
-    lineNumberArea->setGeometry(QRect(cr.left(), cr.top(), lineNumberAreaWidth(), cr.height()));
+    lineNumberArea->setGeometry(QRect(cr.left(), cr.top(), computeLineNumberAreaWidth(), cr.height()));
 }
 
 void EditorWidget::lineNumberAreaPaintEvent(QPaintEvent *event) {
     QPainter painter(lineNumberArea);
-    painter.fillRect(event->rect(), Qt::lightGray);
+    painter.fillRect(event->rect(), lineNumberBgColor);
 
+    painter.setPen(lineNumberFgColor);
     QTextBlock block = firstVisibleBlock();
     int blockNumber = block.blockNumber();
     int top = static_cast<int>(blockBoundingGeometry(block).translated(contentOffset()).top());
@@ -71,7 +70,6 @@ void EditorWidget::lineNumberAreaPaintEvent(QPaintEvent *event) {
     while (block.isValid() && top <= event->rect().bottom()) {
         if (block.isVisible() && bottom >= event->rect().top()) {
             QString number = QString::number(blockNumber + 1);
-            painter.setPen(Qt::black);
             painter.drawText(0, top, lineNumberArea->width() - 5, fontMetrics().height(),
                              Qt::AlignRight, number);
         }
@@ -88,7 +86,7 @@ void EditorWidget::highlightCurrentLine() {
 
     if (!isReadOnly()) {
         QTextEdit::ExtraSelection selection;
-        selection.format.setBackground(QColor(Qt::yellow).lighter(160));
+        selection.format.setBackground(highlightColor);
         selection.format.setProperty(QTextFormat::FullWidthSelection, true);
         selection.cursor = textCursor();
         selection.cursor.clearSelection();
@@ -96,10 +94,6 @@ void EditorWidget::highlightCurrentLine() {
     }
 
     setExtraSelections(extraSelections);
-}
-
-void LineNumberArea::paintEvent(QPaintEvent *event) {
-    static_cast<EditorWidget *>(parent())->lineNumberAreaPaintEvent(event);
 }
 
 void EditorWidget::setSyntaxHighlighter(ISyntaxHighlighter *highlighter) {
@@ -119,4 +113,42 @@ void EditorWidget::setCurrentFilePath(const QString &path) {
 
 ISyntaxHighlighter *EditorWidget::getSyntaxHighlighter() const {
     return syntaxHighlighter;
+}
+
+void EditorWidget::setCurrentLineColor(const QColor &color) {
+    highlightColor = color;
+    highlightCurrentLine();
+}
+
+QColor EditorWidget::currentLineColor() const {
+    return highlightColor;
+}
+
+void EditorWidget::setLineNumberColor(const QColor &color) {
+    lineNumberBgColor = color;
+    lineNumberArea->update();
+}
+
+QColor EditorWidget::lineNumberColor() const {
+    return lineNumberBgColor;
+}
+
+void EditorWidget::setLineNumberTextColor(const QColor &color) {
+    lineNumberFgColor = color;
+    lineNumberArea->update();
+}
+
+QColor EditorWidget::lineNumberTextColor() const {
+    return lineNumberFgColor;
+}
+
+void EditorWidget::setLineNumberWidth(int width) {
+    if (width > 0) {
+        lineNumberAreaWidthValue = width;
+        updateLineNumberAreaWidth(0);
+    }
+}
+
+int EditorWidget::lineNumberWidth() const {
+    return lineNumberAreaWidthValue;
 }

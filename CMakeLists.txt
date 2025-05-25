@@ -43,6 +43,7 @@ set(SOURCES
     src/syntax/KSyntaxHighlightingAdapter.cpp
     src/core/PluginManager.cpp
     src/core/ConfigManager.cpp
+    src/core/ResourceLoader.cpp
 )
 
 # Header files (for clarity)
@@ -54,6 +55,7 @@ set(HEADERS
     src/core/PluginManager.h
     include/ConfigManager.h
     include/ISyntaxHighlighter.h
+    include/ResourceLoader.h
 )
 
 # Add the executable
@@ -68,6 +70,13 @@ target_link_libraries(Coda
         KF5::SyntaxHighlighting
 )
 
+# For dev
+add_custom_command(TARGET Coda POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/resources
+        $<TARGET_FILE_DIR:Coda>/resources
+)
+
 # For Linux: Add pthread if needed
 if(UNIX)
     target_link_libraries(Coda PRIVATE pthread)
@@ -76,7 +85,5 @@ endif()
 # Install the Coda binary
 install(TARGETS Coda DESTINATION bin)
 
-# Install the plugins.json and plugins folder
-install(FILES plugins.json DESTINATION share/coda)
-
-install(DIRECTORY plugins/ DESTINATION share/coda)
+# Install the config.json and plugins folder
+install(DIRECTORY resources/ DESTINATION share/Coda)

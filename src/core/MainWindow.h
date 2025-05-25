@@ -1,7 +1,8 @@
 /**
  * @file MainWindow.h
  * @brief Main window class for the Coda text editor.
- *        Provides file handling, menu integration, dynamic syntax highlighting, and Lua scripting support via JSON-configured plugins.
+ *        Provides file handling, menu integration, dynamic syntax highlighting,
+ *        Lua scripting support via JSON-configured plugins, and theme loading.
  * @author Dario Romandini
  */
 
@@ -9,6 +10,7 @@
 
 #include <QMainWindow>
 #include <QString>
+
 #include "ScriptingEngine.h"
 #include "PluginManager.h"
 #include "ConfigManager.h"
@@ -18,7 +20,8 @@ class EditorWidget;
 /**
  * @class MainWindow
  * @brief The main application window of the Coda text editor.
- *        Inherits from QMainWindow and manages file operations, syntax highlighting, theme switching, and Lua scripting integration.
+ *        Inherits from QMainWindow and manages file operations, syntax highlighting,
+ *        theme switching via .qss files, and Lua scripting integration.
  */
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -52,24 +55,20 @@ private slots:
     void saveFileAs();
 
     /**
-     * @brief Switches the theme to a light color scheme.
-     */
-    void setLightTheme();
-
-    /**
-     * @brief Switches the theme to a dark color scheme.
-     */
-    void setDarkTheme();
-
-    /**
      * @brief Executes a Lua script selected by the user.
      */
     void runLuaScript();
 
 private:
+    /**
+     * @brief Applies a stylesheet theme from the 'styles' directory.
+     * @param themeName The name of the theme (e.g., "dark", "light").
+     */
+    void applyTheme(const QString &themeName);
+
     EditorWidget *editor;             ///< The text editor widget.
     QString currentFilePath;          ///< The current file's path.
     ScriptingEngine *scriptingEngine; ///< The Lua scripting engine.
-    PluginManager *pluginManager;     ///< The plugin manager for loading and executing Lua plugins.
+    PluginManager *pluginManager;     ///< The plugin manager for Lua plugins.
     ConfigManager *configManager;     ///< Configuration manager for app settings (JSON-based).
 };

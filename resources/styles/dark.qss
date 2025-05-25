@@ -1,0 +1,84 @@
+/* Dark Theme for Coda */
+
+QMainWindow {
+    background-color: #1E1E2F;
+    color: #E0E0E0;
+    font-family: "Fira Code", "Courier New", monospace;
+    font-size: 12pt;
+}
+
+EditorWidget {
+    background-color: #1E1E2F;
+    color: #CCCCCC;
+    selection-background-color: #555577;
+    selection-color: #FFFFFF;
+    qproperty-currentLineColor: #3A2E4E; /* Purple highlight for current line */
+}
+
+LineNumberArea {
+    qproperty-backgroundColor: #2A2A3A;   /* Dark gray background for line numbers */
+    qproperty-lineNumberTextColor: #AAAAAA; /* Light gray text for line numbers */
+    qproperty-lineNumberWidth: 50;
+}
+
+/* Menus */
+QMenuBar {
+    background-color: #252536;
+    color: #E0E0E0;
+}
+
+QMenuBar::item:selected {
+    background-color: #444460;
+}
+
+QMenu {
+    background-color: #252536;
+    color: #E0E0E0;
+}
+
+QMenu::item:selected {
+    background-color: #444460;
+}
+
+/* Buttons */
+QPushButton {
+    background-color: #333355;
+    color: #E0E0E0;
+    border: 1px solid #444460;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+QPushButton:hover {
+    background-color: #444460;
+}
+
+/* Scrollbars */
+QScrollBar:vertical, QScrollBar:horizontal {
+    background: #252536;
+}
+
+QScrollBar::handle:vertical, QScrollBar::handle:horizontal {
+    background: #444460;
+    border-radius: 4px;
+}
+
+QScrollBar::add-line, QScrollBar::sub-line {
+    background: none;
+    border: none;
+}
+
+/* Status bar */
+QStatusBar, QToolBar {
+    background-color: #252536;
+    color: #CCCCCC;
+}
+
+QToolButton {
+    background-color: transparent;
+    color: #CCCCCC;
+}
+
+QToolButton:hover {
+    background-color: #333355;
+}

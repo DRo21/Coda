@@ -1,8 +1,8 @@
 /**
  * @file EditorWidget.h
  * @brief Editor widget for the Coda text editor, based on QPlainTextEdit.
- *        Provides the text editing area functionality with line numbers and syntax highlighting support.
- *        Supports multiple languages via the ISyntaxHighlighter interface and KSyntaxHighlightingAdapter implementation.
+ *        Provides text editing, line numbers, syntax highlighting, and full QSS customization.
+ *        QSS properties: currentLineColor, lineNumberColor, lineNumberTextColor, lineNumberWidth.
  * @author Dario Romandini
  */
 
@@ -11,114 +11,68 @@
 #include "ISyntaxHighlighter.h"
 #include <QPlainTextEdit>
 #include <QWidget>
-
-/**
- * @class LineNumberArea
- * @brief Widget for displaying line numbers alongside the EditorWidget.
- */
-class LineNumberArea : public QWidget {
-public:
-    /**
-     * @brief Constructor for LineNumberArea.
-     * @param parent Parent widget (typically the EditorWidget).
-     */
-    explicit LineNumberArea(QWidget *parent = nullptr) : QWidget(parent) {}
-
-    /**
-     * @brief Returns the preferred size for the line number area.
-     * @return Size hint for the widget.
-     */
-    QSize sizeHint() const override {
-        return QSize(40, 0); ///< Fixed width for line numbers.
-    }
-
-protected:
-    /**
-     * @brief Paint event for the line number area.
-     * @param event The paint event.
-     */
-    void paintEvent(QPaintEvent *event) override;
-};
+#include <QColor>
 
 /**
  * @class EditorWidget
  * @brief The text editing area of the Coda text editor.
- * Inherits from QPlainTextEdit and adds a line number margin and syntax highlighting.
+ *        Inherits from QPlainTextEdit, adds line numbers, syntax highlighting, and QSS theming support.
  */
 class EditorWidget : public QPlainTextEdit {
     Q_OBJECT
+    Q_PROPERTY(QColor currentLineColor READ currentLineColor WRITE setCurrentLineColor)
+    Q_PROPERTY(QColor lineNumberColor READ lineNumberColor WRITE setLineNumberColor)
+    Q_PROPERTY(QColor lineNumberTextColor READ lineNumberTextColor WRITE setLineNumberTextColor)
+    Q_PROPERTY(int lineNumberWidth READ lineNumberWidth WRITE setLineNumberWidth)
 
 public:
-    /**
-     * @brief Constructor for EditorWidget.
-     * @param parent Optional parent widget.
-     */
     explicit EditorWidget(QWidget *parent = nullptr);
-
-    /**
-     * @brief Paints the line numbers in the line number area.
-     * @param event The paint event.
-     */
     void lineNumberAreaPaintEvent(QPaintEvent *event);
-
-    /**
-     * @brief Sets the syntax highlighter.
-     * @param highlighter Pointer to an ISyntaxHighlighter implementation.
-     */
     void setSyntaxHighlighter(ISyntaxHighlighter *highlighter);
-
-    /**
-     * @brief Gets the current file path (for language detection, etc.).
-     * @return File path as a QString.
-     */
     QString currentFilePath() const;
-
-    /**
-     * @brief Sets the current file path (used for determining the file type and highlighter).
-     * @param path The new file path.
-     */
     void setCurrentFilePath(const QString &path);
-
-    /**
-    * @brief Returns the currently attached syntax highlighter.
-    * @return Pointer to the ISyntaxHighlighter.
-    */
     ISyntaxHighlighter *getSyntaxHighlighter() const;
 
+    // Property accessors for QSS
+    void setCurrentLineColor(const QColor &color);
+    QColor currentLineColor() const;
+
+    void setLineNumberColor(const QColor &color);
+    QColor lineNumberColor() const;
+
+    void setLineNumberTextColor(const QColor &color);
+    QColor lineNumberTextColor() const;
+
+    void setLineNumberWidth(int width);
+    int lineNumberWidth() const;
+
 protected:
-    /**
-     * @brief Handles resizing of the editor widget and adjusts the line number area.
-     * @param event The resize event.
-     */
     void resizeEvent(QResizeEvent *event) override;
 
 private slots:
-    /**
-     * @brief Updates the width of the line number area when the number of blocks changes.
-     * @param newBlockCount The new number of blocks (lines) in the document.
-     */
     void updateLineNumberAreaWidth(int newBlockCount);
-
-    /**
-     * @brief Highlights the current line in the editor.
-     */
     void highlightCurrentLine();
-
-    /**
-     * @brief Updates the line number area when the editor content changes.
-     * @param rect The area to update.
-     * @param dy The vertical scroll offset.
-     */
     void updateLineNumberArea(const QRect &rect, int dy);
 
 private:
-    QWidget *lineNumberArea; ///< Widget for displaying line numbers.
-    ISyntaxHighlighter *syntaxHighlighter; ///< The syntax highlighter used by the editor.
-    QString filePath; ///< Path of the currently opened file.
+    class LineNumberArea : public QWidget {
+    public:
+        explicit LineNumberArea(EditorWidget *editor);
+        QSize sizeHint() const override;
+    protected:
+        void paintEvent(QPaintEvent *event) override;
+    private:
+        EditorWidget *editor;
+    };
 
-    /**
-     * @brief Computes the width of the line number area.
-     * @return The width in pixels.
-     */
-    int lineNumberAreaWidth();
+    LineNumberArea *lineNumberArea;
+    ISyntaxHighlighter *syntaxHighlighter;
+    QString filePath;
+
+    QColor highlightColor = QColor("#44475a");
+    QColor lineNumberBgColor = QColor("#2E2E2E");
+    QColor lineNumberFgColor = QColor("#CCCCCC");
+    int lineNumberAreaWidthValue = 40;
+
+    int computeLineNumberAreaWidth() const;
 };

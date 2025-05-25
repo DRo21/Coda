@@ -1,5 +1,0 @@
-{
-  "plugins": [
-    { "file": "plugins/example.lua", "enabled": true }
-  ]
-}

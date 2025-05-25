@@ -1,8 +1,8 @@
 /**
  * @file MainWindow.cpp
  * @brief Implementation of the MainWindow class for the Coda text editor.
- *        Provides file handling, menu integration, dynamic syntax highlighting, theme switching, and Lua scripting support via JSON-configured plugins.
- *        Uses KSyntaxHighlighting for multi-language support with OCP design principles.
+ *        Provides file handling, menu integration, dynamic syntax highlighting,
+ *        Lua scripting support, and theme switching via .qss files.
  * @author Dario Romandini
  */
 
@@ -12,6 +12,7 @@
 #include <QTextStream>
 #include <QMenuBar>
 #include <QStandardPaths>
+#include <QApplication>
 #include <KSyntaxHighlighting/Repository>
 
 #include "MainWindow.h"
@@ -42,19 +43,14 @@ MainWindow::MainWindow(QWidget *parent)
     fileMenu->addAction("Exit", this, &QWidget::close, QKeySequence(configManager->getShortcut("exit")));
 
     auto *viewMenu = menuBar()->addMenu("&View");
-    viewMenu->addAction("Light Theme", this, &MainWindow::setLightTheme);
-    viewMenu->addAction("Dark Theme", this, &MainWindow::setDarkTheme);
+    viewMenu->addAction("Dark Theme", [this]() { applyTheme("dark"); });
+    viewMenu->addAction("Light Theme", [this]() { applyTheme("light"); });
 
     auto *toolsMenu = menuBar()->addMenu("&Tools");
     toolsMenu->addAction("Run Lua Script", this, &MainWindow::runLuaScript, QKeySequence(configManager->getShortcut("runLuaScript")));
 
     // Apply theme from config
-    QString theme = configManager->getTheme();
-    if (theme.toLower() == "dark") {
-        setDarkTheme();
-    } else {
-        setLightTheme();
-    }
+    applyTheme(configManager->getTheme());
 
     // Load plugins from config.json
     for (const auto &pluginPath : configManager->getPluginList()) {
@@ -117,25 +113,21 @@ void MainWindow::saveFileAs() {
     }
 }
 
-void MainWindow::setLightTheme() {
-    auto *highlighter = dynamic_cast<KSyntaxHighlightingAdapter *>(editor->getSyntaxHighlighter());
-    if (highlighter) {
-        KSyntaxHighlighting::Repository repo;
-        highlighter->setTheme(repo.theme("Breeze Light"));
-    }
-}
-
-void MainWindow::setDarkTheme() {
-    auto *highlighter = dynamic_cast<KSyntaxHighlightingAdapter *>(editor->getSyntaxHighlighter());
-    if (highlighter) {
-        KSyntaxHighlighting::Repository repo;
-        highlighter->setTheme(repo.theme("Breeze Dark"));
-    }
-}
-
 void MainWindow::runLuaScript() {
     QString scriptPath = QFileDialog::getOpenFileName(this, "Select Lua Script");
     if (!scriptPath.isEmpty()) {
         scriptingEngine->runScript(scriptPath.toStdString());
+    }
+}
+
+void MainWindow::applyTheme(const QString &themeName) {
+    QString themeFile = "styles/" + themeName.toLower() + ".qss";
+    QFile file(themeFile);
+    if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QString styleSheet = file.readAll();
+        qApp->setStyleSheet(styleSheet);
+        qInfo() << "Applied theme:" << themeName;
+    } else {
+        qWarning() << "Theme file not found:" << themeFile;
     }
 }

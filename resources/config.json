@@ -1,0 +1,16 @@
+{
+    "plugins": [
+        {
+            "enabled": true,
+            "file": "plugins/example.lua"
+        }
+    ],
+    "shortcuts": {
+        "exit": "Ctrl+Q",
+        "open": "Ctrl+O",
+        "runLuaScript": "Ctrl+R",
+        "save": "Ctrl+S",
+        "saveAs": "Ctrl+Shift+S"
+    },
+    "theme": "Dark"
+}
